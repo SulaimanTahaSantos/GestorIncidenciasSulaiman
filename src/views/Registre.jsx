@@ -31,13 +31,12 @@ const Registre = () => {
       nuevaListaDeUsuarios.push(user);
 
       setSnackbarMessage('Usuario registrado exitosamente');
-      setSnackbarType('success'); // Mostrar éxito
+      setSnackbarType('success'); 
     } else {
       setSnackbarMessage('Faltan datos para completar el registro');
-      setSnackbarType('danger'); // Mostrar error
+      setSnackbarType('danger'); 
     }
 
-    // Limpiar formulario
     setUser({
       Nombre: '',
       Apellido: '',
@@ -55,7 +54,6 @@ const Registre = () => {
 
   return (
     <>
-      <Header />
       <main className="container mt-5">
         <div className="pt-5">
           <h1 className="w-100 text-center">Registro</h1>
