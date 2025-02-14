@@ -1,45 +1,122 @@
-import React from 'react';
-import  Header  from '../components/Header';
-
+import React, { useState } from 'react';
+import Header from '../components/Header';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Registre = () => {
+  const [user, setUser] = useState({
+    Nombre: '',
+    Apellido: '',
+    Email: '',
+    Contrasena: '',
+    Rol: 'Alumno'
+  });
+  const [snackbar, setSnackBar] = useState(false); 
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarType, setSnackbarType] = useState('success'); 
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prevUser) => ({
+      ...prevUser,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const nuevaListaDeUsuarios = JSON.parse(localStorage.getItem('dades_usuaris')) || [];
+
+    if (user.Nombre && user.Apellido && user.Email && user.Contrasena) {
+      nuevaListaDeUsuarios.push(user);
+
+      setSnackbarMessage('Usuario registrado exitosamente');
+      setSnackbarType('success'); // Mostrar éxito
+    } else {
+      setSnackbarMessage('Faltan datos para completar el registro');
+      setSnackbarType('danger'); // Mostrar error
+    }
+
+    // Limpiar formulario
+    setUser({
+      Nombre: '',
+      Apellido: '',
+      Email: '',
+      Contrasena: '',
+      Rol: 'Alumno'
+    });
+
+    setSnackBar(true); 
+
+    setTimeout(() => {
+      setSnackBar(false);
+    }, 3000); 
+  };
+
   return (
     <>
-      <Header/>
+      <Header />
       <main className="container mt-5">
         <div className="pt-5">
           <h1 className="w-100 text-center">Registro</h1>
-          <form action="" className="form p-4 border shadow bordered mt-5 mx-auto" style={{ width: '400px' }}>
-            <label htmlFor="email" className="mt-2 form-label">User: </label>
-            <input type="text" className="form-control" placeholder="usuario@mail.com" />
-            <label htmlFor="pass" className="mt-2 form-label">Contraseña: </label>
-            <input type="text" className="form-control" />
-            <input type="text" className="mt-4 w-100 btn btn-primary" value="Entrar" id="enviar" />
+          <form onSubmit={handleSubmit} className="form p-4 border shadow bordered mt-5 mx-auto" style={{ width: '400px' }}>
+            <label htmlFor="email" className="mt-2 form-label">Email: </label>
+            <input
+              type="email"
+              name="Email"
+              className="form-control"
+              placeholder="usuario@mail.com"
+              value={user.Email}
+              onChange={handleInputChange}
+              required
+            />
+            <label htmlFor="nombre" className="mt-2 form-label">Nombre: </label>
+            <input
+              type="text"
+              name="Nombre"
+              className="form-control"
+              placeholder="Nombre"
+              value={user.Nombre}
+              onChange={handleInputChange}
+              required
+            />
+            <label htmlFor="apellido" className="mt-2 form-label">Apellido: </label>
+            <input
+              type="text"
+              name="Apellido"
+              className="form-control"
+              placeholder="Apellido"
+              value={user.Apellido}
+              onChange={handleInputChange}
+              required
+            />
+            <label htmlFor="contrasena" className="mt-2 form-label">Contraseña: </label>
+            <input
+              type="password"
+              name="Contrasena"
+              className="form-control"
+              value={user.Contrasena}
+              onChange={handleInputChange}
+              required
+            />
+            <button type="submit" className="mt-4 w-100 btn btn-primary">Registrar</button>
           </form>
         </div>
       </main>
-      <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="exampleModalLabel">Observaciones</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+      {snackbar && (
+        <div className="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+          <div className={`toast show bg-${snackbarType}`} role="alert" aria-live="assertive" aria-atomic="true">
+            <div className="toast-header">
+              <strong className="me-auto">{snackbarType === 'success' ? 'Éxito' : 'Error'}</strong>
+              <button type="button" className="btn-close" data-bs-dismiss="toast" aria-label="Close" onClick={() => setSnackBar(false)}></button>
             </div>
-            <div className="modal-body">
-              <p>Código incidencia: <span>123546</span></p>
-              <label htmlFor="comentario" className="form-label">Comentario:</label>
-              <input className="form-control" defaultValue="Este es un comentario sobre esta incidencia" />
-              <p className="small text-end">Autor: <span>Pepe Loco</span></p>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" className="btn btn-primary">Guardar cambios</button>
+            <div className="toast-body">
+              {snackbarMessage}
             </div>
           </div>
         </div>
-      </div>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+      )}
     </>
   );
 };
