@@ -21,22 +21,26 @@ const Registre = () => {
       [name]: value
     }));
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-
+  
     const nuevaListaDeUsuarios = JSON.parse(localStorage.getItem('dades_usuaris')) || [];
-
+  
     if (user.Nombre && user.Apellido && user.Email && user.Contrasena) {
       nuevaListaDeUsuarios.push(user);
-
+  
+      localStorage.setItem('dades_usuaris', JSON.stringify(nuevaListaDeUsuarios));
+  
+      console.log(nuevaListaDeUsuarios);
+      console.log(user);
+  
       setSnackbarMessage('Usuario registrado exitosamente');
       setSnackbarType('success'); 
     } else {
       setSnackbarMessage('Faltan datos para completar el registro');
       setSnackbarType('danger'); 
     }
-
+  
     setUser({
       Nombre: '',
       Apellido: '',
@@ -44,13 +48,14 @@ const Registre = () => {
       Contrasena: '',
       Rol: 'Alumno'
     });
-
+  
     setSnackBar(true); 
-
+  
     setTimeout(() => {
       setSnackBar(false);
     }, 3000); 
   };
+  
 
   return (
     <>
@@ -98,6 +103,10 @@ const Registre = () => {
               required
             />
             <button type="submit" className="mt-4 w-100 btn btn-primary">Registrar</button>
+            <div className='mt-2'>
+            <a className='text-decoration-none' href="/">Si ya tienes cuenta, inicia sesion</a>
+
+            </div>
           </form>
         </div>
       </main>

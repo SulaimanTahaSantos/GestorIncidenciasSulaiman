@@ -4,9 +4,9 @@ let dades_tiquets = [
     {Codigo: 3, Fecha: "2021-01-03", Aula: "T8", Grupo: "SMX1", Ordenador: "PC5", Descripcion: "Teclado no funciona", Alumno: "María López", Estado: "Pendiente", fechaResuelto: ""},
     {Codigo: 4, Fecha: "2021-01-04", Aula: "T9", Grupo: "SMX2", Ordenador: "PC6", Descripcion: "Ratón no funciona", Alumno: "Carlos Pérez", Estado: "Resuelto", fechaResuelto: ""},
     {Codigo: 5, Fecha: "2021-01-05", Aula: "T10", Grupo: "ARI1", Ordenador: "PC7", Descripcion: "No hay conexión a internet", Alumno: "Laura Sánchez", Estado: "Pendiente", fechaResuelto: ""},
-]
+];
 
-if(localStorage.getItem("dades_tiquets") === true) {
+if (!localStorage.getItem("dades_tiquets")) {
     localStorage.setItem("dades_tiquets", JSON.stringify(dades_tiquets));
 }
 
@@ -16,10 +16,10 @@ let dades_usuaris = [
     {Nombre: "María", Apellido: "López", Email: "maria.lopez@outlook.es", Contrasena: "password789", Rol: "Alumno"},
     {Nombre: "Carlos", Apellido: "Pérez", Email: "carlos.perez@gmail.com", Contrasena: "password101", Rol: "Alumno"},
     {Nombre: "Laura", Apellido: "Sánchez", Email: "laura.sanchez@gmail.com", Contrasena: "password102", Rol: "Alumno"}
-]
+];
 
-if(localStorage.getItem("dades_usuaris") === true) {
+if (!localStorage.getItem("dades_usuaris")) {
     localStorage.setItem("dades_usuaris", JSON.stringify(dades_usuaris));
 }
 
-export {dades_tiquets, dades_usuaris};
+export { dades_tiquets, dades_usuaris };

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 
 const IniciSessio = () => {
@@ -7,15 +6,25 @@ const IniciSessio = () => {
   const [password, setPassword] = useState('');
   const [logeado, setLogeado] = useState(false);
   const navigate = useNavigate();
-    const [snackbar, setSnackBar] = useState(false); 
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarType, setSnackbarType] = useState('success'); 
+  const [snackbar, setSnackBar] = useState(false); 
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarType, setSnackbarType] = useState('success'); 
 
   useEffect(() => {
-    const users = JSON.parse(localStorage.getItem('dades_usuaris'));
-    if (users) {
-      setLogeado(true);
-    }
+    const updateUsers = () => {
+      const users = JSON.parse(localStorage.getItem('dades_usuaris')) || [];
+      if (users) {
+        setLogeado(true); 
+      }
+    };
+
+    updateUsers(); 
+
+    window.addEventListener('storage', updateUsers);
+
+    return () => {
+      window.removeEventListener('storage', updateUsers);
+    };
   }, []);
 
   const handleInputChange = (e) => {
@@ -30,7 +39,7 @@ const IniciSessio = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const users = JSON.parse(localStorage.getItem('dades_usuaris'));
+    const users = JSON.parse(localStorage.getItem('dades_usuaris'));  
 
     if (users) {
       const user = users.find(
@@ -38,20 +47,18 @@ const IniciSessio = () => {
       );
       if (user) {
         setLogeado(true);
-        
-      setSnackbarMessage('Sesion iniciada correctamente');
-      setSnackbarType('success'); 
-        navigate("/panel")
-
+        localStorage.setItem("userLogged", JSON.stringify(user));  
+        localStorage.setItem("userEmail", user.Email);
+        navigate("/panel");
       } else {
         setSnackbarMessage('Credenciales incorrectas');
-        setSnackbarType('danger'); 
+        setSnackbarType('danger');
       }
     }
-    setSnackBar(true); 
+    setSnackBar(true);
     setTimeout(() => {
       setSnackBar(false);
-    }, 3000); 
+    }, 3000);
   };
 
   return (
@@ -77,7 +84,10 @@ const IniciSessio = () => {
               onChange={handleInputChange}
               name="password"
             />
-            <input type="submit" className="mt-4 w-100 btn btn-primary" value="Entrar" id="enviar" />
+            <input type="submit" className="mt-3 w-100 btn btn-primary" value="Entrar" id="enviar" />
+            <div className='mt-2'>
+              <a className='text-decoration-none' href="/Registre">Si no tienes cuenta registrate</a>
+            </div>
           </form>
         </div>
       </main>
@@ -95,31 +105,6 @@ const IniciSessio = () => {
           </div>
         </div>
       )}
-
-      {/* Modal (optional) */}
-      <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="exampleModalLabel">Observaciones</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div className="modal-body">
-              <p>Código incidencia: <span>123546</span></p>
-              <label htmlFor="comentario" className="form-label">Comentario:</label>
-              <input className="form-control" defaultValue="Este es un comentario sobre esta incidencia" />
-              <p className="small text-end">Autor: <span>Pepe Loco</span></p>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" className="btn btn-primary">Guardar cambios</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     </>
   );
 };
