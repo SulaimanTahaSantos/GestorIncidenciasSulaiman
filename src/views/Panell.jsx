@@ -2,10 +2,13 @@ import React, { useState, useEffect } from "react";
 import Header from '../components/Header';
 import { dades_tiquets } from '../database/gestionTickets';
 import Comentari from "../components/Comentari";
-import Comentaris from "../components/Comentaris";
+import Comentaris from "./Comentaris";
+import { useNavigate } from "react-router-dom";
 
 const Panell = () => {
   const storedTickets = JSON.parse(localStorage.getItem("tickets")) || dades_tiquets;
+
+  let navigate = useNavigate();
 
   const [tickets, setTickets] = useState(storedTickets);
   const [showModal, setShowModal] = useState(false);  // Estado para controlar la visibilidad del modal
@@ -67,6 +70,11 @@ const Panell = () => {
       alert('No se seleccionó ningún ticket.');
     }
   }
+
+  const handleNavigateToComentarios = (ticketId) => {
+    navigate(`/comentaris/${ticketId}`, {
+    });
+  };
   
   
 
@@ -118,6 +126,7 @@ const Panell = () => {
                   </td>
                   <td>
                     <button onClick={()=>{
+                      handleNavigateToComentarios(ticket.Codigo)
                       handleModal();
                       setCurrentTicket(ticket);
                     }} className="btn btn-info" title="Ver comentarios">
@@ -195,18 +204,16 @@ const Panell = () => {
           </tbody>
         </table>
 
-        {showModal && <Comentari 
+        {/* {showModal && <Comentari 
           show={showModal} 
           handleClose={closeModal} 
           onSubmit={handleAddComentario} 
             />
 
-        }
-        {showModal && <Comentaris
-          show={showModal}
-          handleClose={closeModal}
-          />
-        }
+        } */}
+      
+
+  
       </main>
    
 
