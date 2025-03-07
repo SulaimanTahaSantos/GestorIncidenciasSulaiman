@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
 import Header from '../components/Header';
 import { dades_tiquets } from '../database/gestionTickets';
+import Comentari from "../components/Comentari";
+import Comentaris from "./Comentaris";
+import { useNavigate } from "react-router-dom";
 
 const Panell = () => {
   const storedTickets = JSON.parse(localStorage.getItem("tickets")) || dades_tiquets;
 
-  const [tickets, setTickets] = useState(storedTickets);
+  let navigate = useNavigate();
 
+  const [tickets, setTickets] = useState(storedTickets);
+  const [showModal, setShowModal] = useState(false);  // Estado para controlar la visibilidad del modal
+  const [currentTicket, setCurrentTicket] = useState(null);
   const updateLocalStorage = (updatedTickets) => {
     localStorage.setItem("tickets", JSON.stringify(updatedTickets));
   };
@@ -23,16 +29,54 @@ const Panell = () => {
   };
 
   const deleteTicket = (codigo) => {
-    console.log("Eliminando ticket con código:", codigo); 
     const nuevosTickets = tickets.filter((ticket) => ticket.Codigo !== codigo);
     setTickets(nuevosTickets);
-    console.log("Tickets después de eliminación:", nuevosTickets); 
     updateLocalStorage(nuevosTickets); 
   };
 
   useEffect(() => {
     updateLocalStorage(tickets); 
   }, [tickets]);
+
+  const handleModal = () => {
+    setShowModal(true);  
+  };
+
+  const closeModal = () => {
+    setShowModal(false);  
+  };
+
+  const handleAddComentario = (comentario) => {
+    if (currentTicket) {  
+      const nuevosTickets = tickets.map((ticket) => {
+        if (ticket.Codigo === currentTicket.Codigo) {
+          return {
+            ...ticket,
+            comentarios: [...(ticket.comentarios ?? []), { autor: currentTicket.Alumno, texto: comentario, fecha: new Date().toLocaleDateString() }]
+          };
+        }
+        return ticket;
+      });
+
+
+  
+      setTickets(nuevosTickets);
+      updateLocalStorage(nuevosTickets);
+
+      console.log(nuevosTickets);
+      console.log(currentTicket);
+      console.log(comentario)
+    } else {
+      alert('No se seleccionó ningún ticket.');
+    }
+  }
+
+  const handleNavigateToComentarios = (ticketId) => {
+    navigate(`/comentaris/${ticketId}`, {
+    });
+  };
+  
+  
 
   return (
     <>
@@ -73,12 +117,19 @@ const Panell = () => {
                     </button>
                   </td>
                   <td>
-                    <button className="btn btn-warning" title="Añadir comentario">
+                    <button onClick={()=> {
+                      handleModal();
+                      setCurrentTicket(ticket);
+                    }} className="btn btn-warning" title="Añadir comentario">
                       <i className="bi bi-pencil" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>
                     </button>
                   </td>
                   <td>
-                    <button className="btn btn-info" title="Ver comentarios">
+                    <button onClick={()=>{
+                      handleNavigateToComentarios(ticket.Codigo)
+                      handleModal();
+                      setCurrentTicket(ticket);
+                    }} className="btn btn-info" title="Ver comentarios">
                       <i className="bi bi-chat-left-text"></i>
                     </button>
                   </td>
@@ -129,7 +180,7 @@ const Panell = () => {
                     </button>
                   </td>
                   <td>
-                    <button className="btn btn-warning" title="Añadir comentario">
+                    <button onClick={handleModal} className="btn btn-warning" title="Añadir comentario">
                       <i className="bi bi-pencil" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>
                     </button>
                   </td>
@@ -152,8 +203,22 @@ const Panell = () => {
             )}
           </tbody>
         </table>
+
+        {/* {showModal && <Comentari 
+          show={showModal} 
+          handleClose={closeModal} 
+          onSubmit={handleAddComentario} 
+            />
+
+        } */}
+      
+
+  
       </main>
-      <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+   
+
+
+      {/* <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
@@ -172,7 +237,7 @@ const Panell = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
