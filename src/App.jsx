@@ -4,6 +4,7 @@ import IniciSessio from './views/IniciSessio';
 import Registre from './views/Registre';
 import Panell from './views/Panell';
 import Comentaris from './views/Comentaris';
+import Tiquet from './views/tiquet';
 
 function App() {
   return (
@@ -13,6 +14,9 @@ function App() {
           <Route path="/Registre" element={<Registre />} />
           <Route path="/panel" element={<Panell />} />
           <Route path="/comentaris/:id" element={<Comentaris />} />
+          <Route path="/tiquet" element={<Tiquet />} />
+
+          
         
         </Routes>
       </Router>
