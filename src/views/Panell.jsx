@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
 import Header from '../components/Header';
 import { dades_tiquets } from '../database/gestionTickets';
-import Comentari from "../components/Comentari";
-import Comentaris from "./Comentaris";
+import { getDadesTiquets } from '../database/gestionTickets';
 import { useNavigate } from "react-router-dom";
+import Tiquet from "./tiquet";
+
 
 const Panell = () => {
-  const storedTickets = JSON.parse(localStorage.getItem("tickets")) || dades_tiquets;
+  const storedTickets = getDadesTiquets();
+
 
   let navigate = useNavigate();
 
   const [tickets, setTickets] = useState(storedTickets);
-  const [showModal, setShowModal] = useState(false);  // Estado para controlar la visibilidad del modal
+  const [showModal, setShowModal] = useState(false);  
   const [currentTicket, setCurrentTicket] = useState(null);
   const updateLocalStorage = (updatedTickets) => {
     localStorage.setItem("tickets", JSON.stringify(updatedTickets));
+  };
+
+  const updateTickets = (updatedTickets) => {
+    setTickets(updatedTickets);  // Actualiza el estado de los tickets
   };
 
   const resolveTicket = (codigo) => {
@@ -46,35 +52,12 @@ const Panell = () => {
     setShowModal(false);  
   };
 
-  const handleAddComentario = (comentario) => {
-    if (currentTicket) {  
-      const nuevosTickets = tickets.map((ticket) => {
-        if (ticket.Codigo === currentTicket.Codigo) {
-          return {
-            ...ticket,
-            comentarios: [...(ticket.comentarios ?? []), { autor: currentTicket.Alumno, texto: comentario, fecha: new Date().toLocaleDateString() }]
-          };
-        }
-        return ticket;
-      });
-
-
-  
-      setTickets(nuevosTickets);
-      updateLocalStorage(nuevosTickets);
-
-      console.log(nuevosTickets);
-      console.log(currentTicket);
-      console.log(comentario)
-    } else {
-      alert('No se seleccionó ningún ticket.');
-    }
-  }
-
   const handleNavigateToComentarios = (ticketId) => {
     navigate(`/comentaris/${ticketId}`, {
     });
   };
+
+  console.log(tickets);
   
   
 
@@ -83,6 +66,11 @@ const Panell = () => {
       <Header />
       <main className="container mt-5">
         <h1>Administración de incidencias</h1>
+        <div>
+        <button className="btn btn-success mt-4" title="Añadir ticket" onClick={handleModal}>Añadir ticket</button>
+        </div>
+        <Tiquet show={showModal} handleClose={closeModal} onAddTicket={updateTickets} />
+
         <h2 className="mt-5">Tickets pendientes</h2>
         <table className="table mt-4">
           <thead>
@@ -185,7 +173,11 @@ const Panell = () => {
                     </button>
                   </td>
                   <td>
-                    <button className="btn btn-info" title="Ver comentarios">
+                  <button onClick={()=>{
+                      handleNavigateToComentarios(ticket.Codigo)
+                      handleModal();
+                      setCurrentTicket(ticket);
+                    }} className="btn btn-info" title="Ver comentarios">
                       <i className="bi bi-chat-left-text"></i>
                     </button>
                   </td>
@@ -204,16 +196,6 @@ const Panell = () => {
           </tbody>
         </table>
 
-        {/* {showModal && <Comentari 
-          show={showModal} 
-          handleClose={closeModal} 
-          onSubmit={handleAddComentario} 
-            />
-
-        } */}
-      
-
-  
       </main>
    
 

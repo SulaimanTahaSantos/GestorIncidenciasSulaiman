@@ -1,3 +1,4 @@
+
 let dades_tiquets = [
     {Codigo: 1, Fecha: "2021-01-01", Aula: "T6", Grupo: "DAW1", Ordenador: "PC3", Descripcion: "Error de impresora", Alumno: "Ana Martínez", Estado: "Pendiente", fechaResuelto: "", comentarios: []},
     {Codigo: 2, Fecha: "2021-01-02", Aula: "T7", Grupo: "DAW2", Ordenador: "PC4", Descripcion: "Pantalla azul", Alumno: "Luis García", Estado: "Resuelto", fechaResuelto: "",comentarios: []},
@@ -22,4 +23,14 @@ if (!localStorage.getItem("dades_usuaris")) {
     localStorage.setItem("dades_usuaris", JSON.stringify(dades_usuaris));
 }
 
-export { dades_tiquets, dades_usuaris };
+
+function getDadesTiquets() {
+    let dades_tiquets = JSON.parse(localStorage.getItem("dades_tiquets"));
+    return dades_tiquets || [];  
+}
+
+function setDadesTiquets(dades) {
+    localStorage.setItem("dades_tiquets", JSON.stringify(dades));
+}
+
+export { dades_tiquets, dades_usuaris, getDadesTiquets, setDadesTiquets };
