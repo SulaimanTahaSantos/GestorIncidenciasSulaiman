@@ -5,6 +5,15 @@ import { useNavigate } from "react-router-dom";
 const Header = () => {
   const navigate = useNavigate();
   const userEmail = localStorage.getItem("userEmail");
+  // const userLogged = localStorage.getItem("userLogged");
+
+  const userLogged = JSON.parse(localStorage.getItem("userLogged"));  
+  const rol = userLogged?.Rol;  
+  
+  console.log(rol); 
+  
+
+
 
   const handleLogout = () => {
     localStorage.removeItem("userLogged");
@@ -23,6 +32,13 @@ const Header = () => {
             <Link to="/panel" className="btn btn-secondary ms-2">
               PANEL
             </Link>
+            {rol === "Admin" ? (
+              <Link to="/adminDashboard" className="btn btn-secondary ms-2">
+                Administració d’Usuaris
+              </Link>
+            ) : (
+              ""
+            )}
             {userEmail ? (
               <Link onClick={handleLogout} to="/" className="btn btn-danger ms-2">
                 Cerrar sesion

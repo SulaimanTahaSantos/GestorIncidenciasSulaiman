@@ -9,6 +9,8 @@ import Tiquet from "./tiquet";
 const Panell = () => {
   const storedTickets = getDadesTiquets();
 
+ 
+
 
   let navigate = useNavigate();
 
@@ -20,7 +22,7 @@ const Panell = () => {
   };
 
   const updateTickets = (updatedTickets) => {
-    setTickets(updatedTickets);  // Actualiza el estado de los tickets
+    setTickets(updatedTickets);  
   };
 
   const resolveTicket = (codigo) => {

@@ -5,6 +5,7 @@ import Registre from './views/Registre';
 import Panell from './views/Panell';
 import Comentaris from './views/Comentaris';
 import Tiquet from './views/tiquet';
+import AdminDashboard from './views/AdminDashboard';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/panel" element={<Panell />} />
           <Route path="/comentaris/:id" element={<Comentaris />} />
           <Route path="/tiquet" element={<Tiquet />} />
+          <Route path="/adminDashboard" element={<AdminDashboard/>} />
 
           
         
