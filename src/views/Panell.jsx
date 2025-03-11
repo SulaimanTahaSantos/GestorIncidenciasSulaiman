@@ -1,67 +1,66 @@
 import React, { useState, useEffect } from "react";
-import Header from '../components/Header';
-import { dades_tiquets } from '../database/gestionTickets';
-import { getDadesTiquets } from '../database/gestionTickets';
+import Header from "../components/Header";
+import { dades_tiquets } from "../database/gestionTickets";
+import { getDadesTiquets, getDadesUsuaris } from "../database/gestionTickets";
 import { useNavigate } from "react-router-dom";
 import Tiquet from "./tiquet";
 
-
 const Panell = () => {
   const storedTickets = getDadesTiquets();
-
- 
-
+  const userLogged = JSON.parse(localStorage.getItem("userLogged"));
+  const rol = userLogged?.Rol;
 
   let navigate = useNavigate();
 
   const [tickets, setTickets] = useState(storedTickets);
-  const [showModal, setShowModal] = useState(false);  
+  const [showModal, setShowModal] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const updateLocalStorage = (updatedTickets) => {
     localStorage.setItem("tickets", JSON.stringify(updatedTickets));
   };
 
   const updateTickets = (updatedTickets) => {
-    setTickets(updatedTickets);  
+    setTickets(updatedTickets);
   };
 
   const resolveTicket = (codigo) => {
     const nuevosTickets = tickets.map((ticket) => {
       if (ticket.Codigo === codigo && ticket.Estado === "Pendiente") {
-        return { ...ticket, Estado: "Resuelto", fechaResuelto: new Date().toLocaleDateString() }; 
+        return {
+          ...ticket,
+          Estado: "Resuelto",
+          fechaResuelto: new Date().toLocaleDateString(),
+        };
       }
       return ticket;
     });
     setTickets(nuevosTickets);
-    updateLocalStorage(nuevosTickets); 
+    updateLocalStorage(nuevosTickets);
   };
 
   const deleteTicket = (codigo) => {
     const nuevosTickets = tickets.filter((ticket) => ticket.Codigo !== codigo);
     setTickets(nuevosTickets);
-    updateLocalStorage(nuevosTickets); 
+    updateLocalStorage(nuevosTickets);
   };
 
   useEffect(() => {
-    updateLocalStorage(tickets); 
+    updateLocalStorage(tickets);
   }, [tickets]);
 
   const handleModal = () => {
-    setShowModal(true);  
+    setShowModal(true);
   };
 
   const closeModal = () => {
-    setShowModal(false);  
+    setShowModal(false);
   };
 
   const handleNavigateToComentarios = (ticketId) => {
-    navigate(`/comentaris/${ticketId}`, {
-    });
+    navigate(`/comentaris/${ticketId}`, {});
   };
 
   console.log(tickets);
-  
-  
 
   return (
     <>
@@ -69,9 +68,19 @@ const Panell = () => {
       <main className="container mt-5">
         <h1>Administración de incidencias</h1>
         <div>
-        <button className="btn btn-success mt-4" title="Añadir ticket" onClick={handleModal}>Añadir ticket</button>
+          <button
+            className="btn btn-success mt-4"
+            title="Añadir ticket"
+            onClick={handleModal}
+          >
+            Añadir ticket
+          </button>
         </div>
-        <Tiquet show={showModal} handleClose={closeModal} onAddTicket={updateTickets} />
+        <Tiquet
+          show={showModal}
+          handleClose={closeModal}
+          onAddTicket={updateTickets}
+        />
 
         <h2 className="mt-5">Tickets pendientes</h2>
         <table className="table mt-4">
@@ -87,120 +96,156 @@ const Panell = () => {
             </tr>
           </thead>
           <tbody>
-            {tickets.map((ticket) =>
-              ticket.Estado === "Pendiente" && (
-                <tr key={ticket.Codigo}>
-                  <td>{ticket.Codigo}</td>
-                  <td>{ticket.Fecha}</td>
-                  <td>{ticket.Aula}</td>
-                  <td>{ticket.Grupo}</td>
-                  <td>{ticket.Ordenador}</td>
-                  <td>{ticket.Descripcion}</td>
-                  <td>{ticket.Alumno}</td>
-                  <td>
-                    <button
-                      className="btn btn-success"
-                      title="Resolver ticket"
-                      onClick={() => resolveTicket(ticket.Codigo)}
-                    >
-                      Resolver
-                    </button>
-                  </td>
-                  <td>
-                    <button onClick={()=> {
-                      handleModal();
-                      setCurrentTicket(ticket);
-                    }} className="btn btn-warning" title="Añadir comentario">
-                      <i className="bi bi-pencil" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <button onClick={()=>{
-                      handleNavigateToComentarios(ticket.Codigo)
-                      handleModal();
-                      setCurrentTicket(ticket);
-                    }} className="btn btn-info" title="Ver comentarios">
-                      <i className="bi bi-chat-left-text"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-danger"
-                      title="Eliminar ticket"
-                      onClick={() => deleteTicket(ticket.Codigo)}
-                    >
-                      <i className="bi bi-trash3"></i>
-                    </button>
-                  </td>
-                </tr>
-              )
+            {tickets.map(
+              (ticket) =>
+                ticket.Estado === "Pendiente" && (
+                  <tr key={ticket.Codigo}>
+                    <td>{ticket.Codigo}</td>
+                    <td>{ticket.Fecha}</td>
+                    <td>{ticket.Aula}</td>
+                    <td>{ticket.Grupo}</td>
+                    <td>{ticket.Ordenador}</td>
+                    <td>{ticket.Descripcion}</td>
+                    <td>{ticket.Alumno}</td>
+                    {rol === "Admin" && (
+                      <td>
+                        <button
+                          className="btn btn-success"
+                          title="Resolver ticket"
+                          onClick={() => resolveTicket(ticket.Codigo)}
+                        >
+                          Resolver
+                        </button>
+                      </td>
+                    )}
+
+                    {rol === "Admin" && (
+                      <td>
+                        <button
+                          onClick={() => {
+                            handleModal();
+                            setCurrentTicket(ticket);
+                          }}
+                          className="btn btn-warning"
+                          title="Añadir comentario"
+                        >
+                          <i
+                            className="bi bi-pencil"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                          ></i>
+                        </button>
+                      </td>
+                    )}
+                    <td>
+                      <button
+                        onClick={() => {
+                          handleNavigateToComentarios(ticket.Codigo);
+                          handleModal();
+                          setCurrentTicket(ticket);
+                        }}
+                        className="btn btn-info"
+                        title="Ver comentarios"
+                      >
+                        <i className="bi bi-chat-left-text"></i>
+                      </button>
+                    </td>
+                    {rol === "Admin" && (
+                      <td>
+                        <button
+                          className="btn btn-danger"
+                          title="Eliminar ticket"
+                          onClick={() => deleteTicket(ticket.Codigo)}
+                        >
+                          <i className="bi bi-trash3"></i>
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                )
             )}
           </tbody>
         </table>
 
-        <h2 className="mt-5">Tickets resueltos</h2>
-        <table className="table mt-4">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Fecha</th>
-              <th>Fecha resuelto</th>
-              <th>Aula</th>
-              <th>Grupo</th>
-              <th>Ordenador</th>
-              <th>Descripción</th>
-              <th>Alumno</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map((ticket) =>
-              ticket.Estado === "Resuelto" && (
-                <tr key={ticket.Codigo}>
-                  <td>{ticket.Codigo}</td>
-                  <td>{ticket.Fecha}</td>
-                  <td>{ticket.fechaResuelto}</td>
-                  <td>{ticket.Aula}</td>
-                  <td>{ticket.Grupo}</td>
-                  <td>{ticket.Ordenador}</td>
-                  <td>{ticket.Descripcion}</td>
-                  <td>{ticket.Alumno}</td>
-                  <td>
-                    <button className="btn btn-success" title="Resolver ticket">
-                      Resolver
-                    </button>
-                  </td>
-                  <td>
-                    <button onClick={handleModal} className="btn btn-warning" title="Añadir comentario">
-                      <i className="bi bi-pencil" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>
-                    </button>
-                  </td>
-                  <td>
-                  <button onClick={()=>{
-                      handleNavigateToComentarios(ticket.Codigo)
-                      handleModal();
-                      setCurrentTicket(ticket);
-                    }} className="btn btn-info" title="Ver comentarios">
-                      <i className="bi bi-chat-left-text"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-danger"
-                      title="Eliminar ticket"
-                      onClick={() => deleteTicket(ticket.Codigo)}
-                    >
-                      <i className="bi bi-trash3"></i>
-                    </button>
-                  </td>
+        {rol === "Admin" && (
+          <>
+            <h2 className="mt-5">Tickets resueltos</h2>
+            <table className="table mt-4">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Fecha</th>
+                  <th>Fecha resuelto</th>
+                  <th>Aula</th>
+                  <th>Grupo</th>
+                  <th>Ordenador</th>
+                  <th>Descripción</th>
+                  <th>Alumno</th>
                 </tr>
-              )
-            )}
-          </tbody>
-        </table>
-
+              </thead>
+              <tbody>
+                {tickets.map((ticket) =>
+                  ticket.Estado === "Resuelto" ? (
+                    <tr key={ticket.Codigo}>
+                      <td>{ticket.Codigo}</td>
+                      <td>{ticket.Fecha}</td>
+                      <td>{ticket.fechaResuelto}</td>
+                      <td>{ticket.Aula}</td>
+                      <td>{ticket.Grupo}</td>
+                      <td>{ticket.Ordenador}</td>
+                      <td>{ticket.Descripcion}</td>
+                      <td>{ticket.Alumno}</td>
+                      <td>
+                        <button
+                          className="btn btn-success"
+                          title="Resolver ticket"
+                        >
+                          Resolver
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          onClick={handleModal}
+                          className="btn btn-warning"
+                          title="Añadir comentario"
+                        >
+                          <i
+                            className="bi bi-pencil"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                          ></i>
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => {
+                            handleNavigateToComentarios(ticket.Codigo);
+                            handleModal();
+                            setCurrentTicket(ticket);
+                          }}
+                          className="btn btn-info"
+                          title="Ver comentarios"
+                        >
+                          <i className="bi bi-chat-left-text"></i>
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-danger"
+                          title="Eliminar ticket"
+                          onClick={() => deleteTicket(ticket.Codigo)}
+                        >
+                          <i className="bi bi-trash3"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  ) : null
+                )}
+              </tbody>
+            </table>
+          </>
+        )}
       </main>
-   
-
 
       {/* <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div className="modal-dialog">
