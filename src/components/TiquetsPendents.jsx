@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+
+import "../tickets-pendientes.css";
 
 const TiquetsPendents = ({
   tickets,
@@ -11,95 +13,87 @@ const TiquetsPendents = ({
   editTicket,
 }) => {
   return (
-    <>
-      <h2 className="mt-5">Tickets pendientes</h2>
-      <table className="table mt-4">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Fecha</th>
-            <th>Aula</th>
-            <th>Grupo</th>
-            <th>Ordenador</th>
-            <th>Descripción</th>
-            <th>Alumno</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map(
-            (ticket) =>
-              ticket.Estado === "Pendiente" && (
-                <tr key={ticket.Codigo}>
-                  <td>{ticket.Codigo}</td>
-                  <td>{ticket.Fecha}</td>
-                  <td>{ticket.Aula}</td>
-                  <td>{ticket.Grupo}</td>
-                  <td>{ticket.Ordenador}</td>
-                  <td>{ticket.Descripcion}</td>
-                  <td>{ticket.Alumno}</td>
-                  {rol === "Admin" && (
+    <div className="tickets-container">
+      <h2 className="mt-5 mb-4">Tickets pendientes</h2>
+      <div className="table-responsive">
+        <table className="table table-hover">
+          <thead className="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Aula</th>
+              <th>Grupo</th>
+              <th>Ordenador</th>
+              <th>Descripción</th>
+              <th>Alumno</th>
+              <th className="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tickets.map(
+              (ticket) =>
+                ticket.estado === "Pendiente" && (
+                  <tr key={ticket.id}>
+                    <td>{ticket.id}</td>
+                    <td>{ticket.fecha}</td>
+                    <td>{ticket.aula}</td>
+                    <td>{ticket.grupo}</td>
+                    <td>{ticket.ordenador}</td>
+                    <td>{ticket.descripcion}</td>
+                    <td>{ticket.alumno}</td>
                     <td>
-                      <button
-                        className="btn btn-success"
-                        title="Resolver ticket"
-                        onClick={() => resolveTicket(ticket.Codigo)}
-                      >
-                        Resolver
-                      </button>
+                      <div className="action-buttons">
+                        {rol === "Admin" && (
+                          <>
+                            <button
+                              className="btn btn-success btn-sm me-1"
+                              title="Resolver ticket"
+                              onClick={() => resolveTicket(ticket.id)}
+                            >
+                              Resolver
+                            </button>
+                            <button
+                              onClick={() => {
+                                setCurrentTicket(ticket);
+                                editTicket(ticket);
+                                handleModal();
+                              }}
+                              className="btn btn-warning btn-sm me-1"
+                              title="Añadir comentario"
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => {
+                            handleNavigateToComentarios(ticket.id);
+                            handleModal();
+                            setCurrentTicket(ticket);
+                          }}
+                          className="btn btn-info btn-sm me-1"
+                          title="Ver comentarios"
+                        >
+                          <i className="bi bi-chat-left-text"></i>
+                        </button>
+                        {rol === "Admin" && (
+                          <button
+                            className="btn btn-danger btn-sm"
+                            title="Eliminar ticket"
+                            onClick={() => deleteTicket(ticket.id)}
+                          >
+                            <i className="bi bi-trash3"></i>
+                          </button>
+                        )}
+                      </div>
                     </td>
-                  )}
-
-                  {rol === "Admin" && (
-                    <td>
-                      <button
-                        onClick={() => {
-                          handleModal();
-                          setCurrentTicket(ticket);
-                          editTicket(ticket);
-                        }}
-                        className="btn btn-warning"
-                        title="Añadir comentario"
-                      >
-                        <i
-                          className="bi bi-pencil"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                        ></i>
-                      </button>
-                    </td>
-                  )}
-                  <td>
-                    <button
-                      onClick={() => {
-                        handleNavigateToComentarios(ticket.Codigo);
-                        handleModal();
-                        setCurrentTicket(ticket);
-                      }}
-                      className="btn btn-info"
-                      title="Ver comentarios"
-                    >
-                      <i className="bi bi-chat-left-text"></i>
-                    </button>
-                  </td>
-                  {rol === "Admin" && (
-                    <td>
-                      <button
-                        className="btn btn-danger"
-                        title="Eliminar ticket"
-                        onClick={() => deleteTicket(ticket.Codigo)}
-                      >
-                        <i className="bi bi-trash3"></i>
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              )
-          )}
-        </tbody>
-      </table>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    </>
+                  </tr>
+                )
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 

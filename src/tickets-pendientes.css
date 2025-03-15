@@ -1,0 +1,26 @@
+.tickets-container {
+  padding: 0 1rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+}
+
+.table th {
+  white-space: nowrap;
+}
+
+.table td {
+  vertical-align: middle;
+}

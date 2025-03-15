@@ -26,20 +26,21 @@ const TiquetsResolts = ({
                 <th>Ordenador</th>
                 <th>Descripción</th>
                 <th>Alumno</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {tickets.map((ticket) =>
-                ticket.Estado === "Resuelto" ? (
-                  <tr key={ticket.Codigo}>
-                    <td>{ticket.Codigo}</td>
-                    <td>{ticket.Fecha}</td>
-                    <td>{ticket.fechaResuelto}</td>
-                    <td>{ticket.Aula}</td>
-                    <td>{ticket.Grupo}</td>
-                    <td>{ticket.Ordenador}</td>
-                    <td>{ticket.Descripcion}</td>
-                    <td>{ticket.Alumno}</td>
+                ticket.estado === "Resuelto" ? (
+                  <tr key={ticket.id}>
+                    <td>{ticket.id}</td>
+                    <td>{ticket.fecha}</td>
+                    <td>{ticket.fecha_resuelto}</td>
+                    <td>{ticket.aula}</td>
+                    <td>{ticket.grupo}</td>
+                    <td>{ticket.ordenador}</td>
+                    <td>{ticket.descripcion}</td>
+                    <td>{ticket.alumno}</td>
                     <td>
                       <button
                         onClick={() => {
@@ -60,7 +61,7 @@ const TiquetsResolts = ({
                     <td>
                       <button
                         onClick={() => {
-                          handleNavigateToComentarios(ticket.Codigo);
+                          handleNavigateToComentarios(ticket.id);
                           handleModal();
                           setCurrentTicket(ticket);
                         }}
@@ -74,7 +75,7 @@ const TiquetsResolts = ({
                       <button
                         className="btn btn-danger"
                         title="Eliminar ticket"
-                        onClick={() => deleteTicket(ticket.Codigo)}
+                        onClick={() => deleteTicket(ticket.id)}
                       >
                         <i className="bi bi-trash3"></i>
                       </button>

@@ -2,53 +2,127 @@ import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import { useParams } from "react-router-dom";
 import Comentari from "../components/Comentari";
-
+import supabase from "../config/config";
 
 function Comentaris() {
   const [comentarios, setComentarios] = useState([]);
   const { id } = useParams();
+  const [userId, setUserId] = useState(null);
 
-  const getUsuario = () => {
-    const userLogged = JSON.parse(localStorage.getItem("userLogged"));
-    return userLogged ? userLogged.Nombre + " " + userLogged.Apellido : "Desconocido";
+  // Obtener el usuario logueado
+  const getUsuario = async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error("Error al obtener el usuario:", error);
+      return null;
+    }
+
+    if (data.user) {
+      const { data: userData, error: userError } = await supabase
+        .from("dades_usuaris")
+        .select("id, nombre, apellido ")
+        .eq("email", data.user.email)
+        .single();
+
+      if (userError) {
+        console.error("Error al obtener datos del usuario:", userError);
+        return null;
+      }
+
+      setUserId(userData ? userData.id : null);
+      console.log("User ID:", userData);
+    }
   };
 
   useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem("dades_tiquets"));
-    if (storedData) {
-      const ticket = storedData.find((ticket) => ticket.Codigo === parseInt(id));
-      if (ticket) {
-        setComentarios(ticket.comentarios);
-      }
-    }
-  }, [id]);
+    const obtenerComentarios = async () => {
+      const { data, error } = await supabase
+        .from("comentaris")
+        .select("comentari, fecha, user_id")
+        .eq("ticket_id", id);
 
-  const handleComentarioSubmit = (comentario, fecha) => {
-    const newComentario = {
-      comentario,
-      fecha,
-      autor: getUsuario(),
+      if (error) {
+        console.error("Error al obtener los comentarios:", error);
+      } else {
+        // Para cada comentario, obtenemos el nombre del usuario
+        const comentariosConNombre = await Promise.all(
+          data.map(async (comentario) => {
+            const { data: userData, error: userError } = await supabase
+              .from("dades_usuaris")
+              .select("nombre, apellido")
+              .eq("id", comentario.user_id)
+              .single();
+
+            if (userError) {
+              console.error("Error al obtener datos del usuario:", userError);
+              return null;
+            }
+
+            return {
+              ...comentario,
+              nombre: userData.nombre,
+              apellido: userData.apellido,
+            };
+          })
+        );
+
+        setComentarios(comentariosConNombre.filter(Boolean));
+      }
     };
 
-    const updatedComentarios = [...comentarios, newComentario];
-    setComentarios(updatedComentarios);
+    obtenerComentarios();
+    getUsuario();
+  }, [id]);
 
-    const storedData = JSON.parse(localStorage.getItem("dades_tiquets"));
-    if (storedData) {
-      const updatedData = storedData.map((ticket) => {
-        if (ticket.Codigo === parseInt(id)) {
-          ticket.comentarios = updatedComentarios;
-        }
-        return ticket;
-      });
-      localStorage.setItem("dades_tiquets", JSON.stringify(updatedData));
+  const handleComentarioSubmit = async (comentari, fecha) => {
+    if (!userId) {
+      console.error("No hay un usuario logueado.");
+      return;
+    }
+
+    const newComentario = {
+      comentari,
+      fecha,
+      ticket_id: id,
+      user_id: userId,
+    };
+
+    const { data: insertedComentario, error } = await supabase
+      .from("comentaris")
+      .insert([newComentario])
+      .single();
+
+    if (error) {
+      console.error("Error al insertar el comentario:", error);
+    } else {
+      const { data: userData, error: userError } = await supabase
+        .from("dades_usuaris")
+        .select("nombre, apellido")
+        .eq("id", userId)
+        .single();
+
+      if (userError) {
+        console.error("Error al obtener el nombre del usuario:", userError);
+      } else {
+        const comentarioConAutor = {
+          ...insertedComentario,
+          nombre: userData.nombre,
+          apellido: userData.apellido,
+          fecha: newComentario.fecha,
+          comentari: newComentario.comentari,
+        };
+
+        setComentarios((prevComentarios) => [
+          ...prevComentarios,
+          comentarioConAutor,
+        ]);
+      }
     }
   };
 
   return (
     <>
       <Header />
-
       <main className="container mt-5">
         <div className="d-flex">
           <h1>Comentarios</h1>
@@ -59,9 +133,9 @@ function Comentaris() {
         </h2>
 
         <Comentari
-          comentarios={comentarios} 
-          onComentarioSubmit={handleComentarioSubmit} 
-          idTicket={id} 
+          comentarios={comentarios}
+          onComentarioSubmit={handleComentarioSubmit}
+          idTicket={id}
         />
       </main>
     </>

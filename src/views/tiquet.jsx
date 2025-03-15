@@ -1,61 +1,105 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { getDadesTiquets, setDadesTiquets } from "../database/gestionTickets";
+import supabase from "../config/config";
 
 const Tiquet = ({ show, handleClose, onAddTicket, currentTicket }) => {
-  const [tickets, setTickets] = useState(getDadesTiquets());
-
-  const nextCodigo =
-    tickets.length > 0 ? tickets[tickets.length - 1].Codigo + 1 : 6;
-
-  const [codigo, setCodigo] = useState(currentTicket?.Codigo || nextCodigo);
-  const [fecha, setFecha] = useState(currentTicket?.Fecha || "");
-  const [aula, setAula] = useState(currentTicket?.Aula || "");
-  const [grupo, setGrupo] = useState(currentTicket?.Grupo || "");
-  const [ordenador, setOrdenador] = useState(currentTicket?.Ordenador || "");
-  const [descripcion, setDescripcion] = useState(
-    currentTicket?.Descripcion || ""
-  );
-  const [alumno, setAlumno] = useState(currentTicket?.Alumno || "");
+  const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
+    const fetchTickets = async () => {
+      const { data, error } = await supabase.from("dades_tiquets").select();
+      if (error) {
+        console.error("Error obteniendo tickets:", error);
+      } else {
+        setTickets(data);
+      }
+    };
+    fetchTickets();
+  }, []);
+
+  const [fecha, setFecha] = useState(currentTicket?.fecha || "");
+  const [aula, setAula] = useState(currentTicket?.aula || "");
+  const [grupo, setGrupo] = useState(currentTicket?.grupo || "");
+  const [ordenador, setOrdenador] = useState(currentTicket?.ordenador || "");
+  const [descripcion, setDescripcion] = useState(
+    currentTicket?.descripcion || ""
+  );
+  const [alumno, setAlumno] = useState(currentTicket?.alumno || "");
+  useEffect(() => {
     if (currentTicket) {
-      setCodigo(currentTicket.Codigo);
-      setFecha(currentTicket.Fecha);
-      setAula(currentTicket.Aula);
-      setGrupo(currentTicket.Grupo);
-      setOrdenador(currentTicket.Ordenador);
-      setDescripcion(currentTicket.Descripcion);
-      setAlumno(currentTicket.Alumno);
+      setFecha(currentTicket.fecha || "");
+      setAula(currentTicket.aula || "");
+      setGrupo(currentTicket.grupo || "");
+      setOrdenador(currentTicket.ordenador || "");
+      setDescripcion(currentTicket.descripcion || "");
+      setAlumno(currentTicket.alumno || "");
     }
   }, [currentTicket]);
 
-  const handleSubmit = (e) => {
+  const insertTicket = async (ticket) => {
+    const { data, error } = await supabase
+      .from("dades_tiquets")
+      .insert([
+        {
+          fecha: ticket.fecha,
+          aula: ticket.aula,
+          grupo: ticket.grupo,
+          ordenador: ticket.ordenador,
+          descripcion: ticket.descripcion,
+          alumno: ticket.alumno,
+          estado: "Pendiente",
+          fecha_resuelto: null,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error insertando ticket:", error);
+      return null;
+    }
+    return data;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const updatedTicket = {
-      Codigo: codigo,
-      Fecha: fecha,
-      Aula: aula,
-      Grupo: grupo,
-      Ordenador: ordenador,
-      Descripcion: descripcion,
-      Alumno: alumno,
-      Estado: currentTicket ? currentTicket.Estado : "Pendiente",
-      fechaResuelto: currentTicket ? currentTicket.fechaResuelto : "",
-      comentarios: currentTicket ? currentTicket.comentarios : [],
+      fecha,
+      aula,
+      grupo,
+      ordenador,
+      descripcion,
+      alumno,
     };
 
     let updatedTickets;
+
     if (currentTicket) {
+      const { data, error } = await supabase
+        .from("dades_tiquets")
+        .update(updatedTicket)
+        .eq("id", currentTicket.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error actualizando ticket:", error);
+        return;
+      }
+
       updatedTickets = tickets.map((ticket) =>
-        ticket.Codigo === currentTicket.Codigo ? updatedTicket : ticket
+        ticket.id === currentTicket.id ? data : ticket
       );
     } else {
-      updatedTickets = [...tickets, updatedTicket];
+      const insertedTicket = await insertTicket(updatedTicket);
+      if (insertedTicket) {
+        updatedTickets = [...tickets, insertedTicket];
+      }
     }
 
-    setDadesTiquets(updatedTickets);
+    setTickets(updatedTickets);
     onAddTicket(updatedTickets);
     handleClose();
   };
@@ -69,11 +113,6 @@ const Tiquet = ({ show, handleClose, onAddTicket, currentTicket }) => {
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
-          <Form.Group controlId="formCodigo">
-            <Form.Label>Código</Form.Label>
-            <Form.Control type="number" value={codigo} disabled />
-          </Form.Group>
-
           <Form.Group controlId="formFecha">
             <Form.Label>Fecha</Form.Label>
             <Form.Control
