@@ -18,6 +18,7 @@ const Tiquet = ({ show, handleClose, onAddTicket, currentTicket }) => {
     fetchTickets();
   }, []);
 
+  // Si hay un ticket actual para editar, lo usamos. Si no, iniciamos los campos vacíos
   const [fecha, setFecha] = useState(currentTicket?.fecha || "");
   const [aula, setAula] = useState(currentTicket?.aula || "");
   const [grupo, setGrupo] = useState(currentTicket?.grupo || "");
@@ -26,7 +27,9 @@ const Tiquet = ({ show, handleClose, onAddTicket, currentTicket }) => {
     currentTicket?.descripcion || ""
   );
   const [alumno, setAlumno] = useState(currentTicket?.alumno || "");
+
   useEffect(() => {
+    // Si estamos editando un ticket, los campos deben ser prellenados.
     if (currentTicket) {
       setFecha(currentTicket.fecha || "");
       setAula(currentTicket.aula || "");
@@ -102,6 +105,13 @@ const Tiquet = ({ show, handleClose, onAddTicket, currentTicket }) => {
     setTickets(updatedTickets);
     onAddTicket(updatedTickets);
     handleClose();
+
+    setFecha("");
+    setAula("");
+    setGrupo("");
+    setOrdenador("");
+    setDescripcion("");
+    setAlumno("");
   };
 
   return (

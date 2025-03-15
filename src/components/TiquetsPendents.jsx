@@ -1,5 +1,4 @@
 import React from "react";
-
 import "../tickets-pendientes.css";
 
 const TiquetsPendents = ({
@@ -26,7 +25,7 @@ const TiquetsPendents = ({
               <th>Ordenador</th>
               <th>Descripción</th>
               <th>Alumno</th>
-              <th className="text-end">Acciones</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
