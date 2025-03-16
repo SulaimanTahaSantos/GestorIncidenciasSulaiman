@@ -119,11 +119,6 @@ const IniciSessio = () => {
                 Si no tienes cuenta registrate
               </a>
             </div>
-            <div className="mt-2">
-              <a className="text-decoration-none" href="/RememberPassword">
-                Recuperar contraseña
-              </a>
-            </div>
           </form>
         </div>
       </main>
