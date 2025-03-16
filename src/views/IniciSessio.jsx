@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
-const supabaseUrl = "https://flnqqkjwltedwlapaloy.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsbnFxa2p3bHRlZHdsYXBhbG95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MTM2MTMsImV4cCI6MjA1NzI4OTYxM30.lHM3RLzE2mJiYTSFwbHn9802vYGz_0Wji7G6VPm6fWM";
-const supabase = createClient(supabaseUrl, supabaseKey);
+import supabase from "../config/config";
+import "../styles.css";
 
 const IniciSessio = () => {
   const [email, setEmail] = useState("");
@@ -27,53 +24,58 @@ const IniciSessio = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      // 1. Comprobar si el usuario existe en la base de datos
+      const { data: existingUser, error: fetchError } = await supabase
+        .from("dades_usuaris")
+        .select("email")
+        .eq("email", email)
+        .single();
 
-    if (!data) {
-      console.log("Error al iniciar sesión", error);
-    }
+      if (fetchError && fetchError.code !== "PGRST116") {
+        setSnackbarMessage(
+          `Error verificando el usuario: ${fetchError.message}`
+        );
+        setSnackbarType("danger");
+        setSnackBar(true);
+        return;
+      }
 
-    if (error) {
-      setSnackbarMessage("Credenciales incorrectas");
-      setSnackbarType("danger");
-      setSnackBar(true);
-      setTimeout(() => setSnackBar(false), 3000);
-    } else {
+      if (!existingUser) {
+        setSnackbarMessage("Este usuario no está registrado.");
+        setSnackbarType("danger");
+        setSnackBar(true);
+        return;
+      }
+
+      // 2. Intentar iniciar sesión con la contraseña
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setSnackbarMessage("Contraseña incorrecta.");
+        setSnackbarType("danger");
+        setSnackBar(true);
+        return;
+      }
+
+      // 3. Si la autenticación es exitosa
       setSnackbarMessage("Usuario logueado exitosamente");
       setSnackbarType("success");
       setSnackBar(true);
-      setTimeout(() => setSnackBar(false), 3000);
-      navigate("/panel");
+
+      setTimeout(() => {
+        setSnackBar(false);
+        navigate("/panel");
+      }, 2000); 
+    } catch (err) {
+      setSnackbarMessage(`Error inesperado: ${err.message}`);
+      setSnackbarType("danger");
+      setSnackBar(true);
     }
   };
-
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-
-  //   const users = JSON.parse(localStorage.getItem('dades_usuaris'));
-
-  //   if (users) {
-  //     const user = users.find(
-  //       (user) => user.Email === email && user.Contrasena === password
-  //     );
-  //     if (user) {
-  //       setLogeado(true);
-  //       localStorage.setItem("userLogged", JSON.stringify(user));
-  //       localStorage.setItem("userEmail", user.Email);
-  //       navigate("/panel");
-  //     } else {
-  //       setSnackbarMessage('Credenciales incorrectas');
-  //       setSnackbarType('danger');
-  //     }
-  //   }
-  //   setSnackBar(true);
-  //   setTimeout(() => {
-  //     setSnackBar(false);
-  //   }, 3000);
-  // };
 
   return (
     <>
@@ -86,7 +88,7 @@ const IniciSessio = () => {
             style={{ width: "400px" }}
           >
             <label htmlFor="email" className="mt-2 form-label">
-              User:{" "}
+              Email:{" "}
             </label>
             <input
               type="text"
@@ -122,12 +124,15 @@ const IniciSessio = () => {
       </main>
 
       {snackbar && (
-        <div className="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+        <div
+          className={`toast-container position-fixed top-0 start-50 translate-middle-x p-3 fadeInUp`}
+        >
           <div
-            className={`toast show bg-${snackbarType}`}
+            className={`toast show bg-${snackbarType} text-white rounded-3 shadow-lg`}
             role="alert"
             aria-live="assertive"
             aria-atomic="true"
+            style={{ animation: "slideIn 0.5s ease-out" }}
           >
             <div className="toast-header">
               <strong className="me-auto">

@@ -1,11 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = "https://flnqqkjwltedwlapaloy.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsbnFxa2p3bHRlZHdsYXBhbG95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MTM2MTMsImV4cCI6MjA1NzI4OTYxM30.lHM3RLzE2mJiYTSFwbHn9802vYGz_0Wji7G6VPm6fWM";
-const supabase = createClient(supabaseUrl, supabaseKey);
+import supabase from "../config/config";
+import "../styles.css";
 
 const Registre = () => {
   const [user, setUser] = useState({
@@ -19,6 +15,7 @@ const Registre = () => {
   const [snackbar, setSnackBar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarType, setSnackbarType] = useState("success");
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,6 +30,30 @@ const Registre = () => {
 
     if (user.Nombre && user.Apellido && user.Email && user.Contrasena) {
       try {
+        // 1. Comprobar si el email ya existe en la base de datos
+        const { data: existingUser, error: fetchError } = await supabase
+          .from("dades_usuaris")
+          .select("*")
+          .eq("email", user.Email)
+          .single();
+
+        if (fetchError && fetchError.code !== "PGRST116") {
+          setSnackbarMessage(
+            `Error verificando el usuario: ${fetchError.message}`
+          );
+          setSnackbarType("danger");
+          setSnackBar(true);
+          return;
+        }
+
+        if (existingUser) {
+          setSnackbarMessage("Este correo ya está registrado.");
+          setSnackbarType("danger");
+          setSnackBar(true);
+          return;
+        }
+
+        // 2. Registrar el usuario en Supabase Authentication
         const { user: supabaseUser, error: signUpError } =
           await supabase.auth.signUp({
             email: user.Email,
@@ -44,19 +65,20 @@ const Registre = () => {
             `Error al registrar usuario: ${signUpError.message}`
           );
           setSnackbarType("danger");
+          setSnackBar(true);
           return;
         }
 
-        // 2. Insertar el usuario en la tabla 'dades_usuaris'
+        // 3. Insertar el usuario en la tabla 'dades_usuaris'
         const { error: insertError } = await supabase
-          .from("dades_usuaris") // Nombre de la tabla en Supabase
+          .from("dades_usuaris")
           .insert([
             {
               nombre: user.Nombre,
               apellido: user.Apellido,
               email: user.Email,
               password: user.Contrasena,
-              rol: user.Rol || "Alumno", // Si no se especifica rol, se asigna 'Alumno' por defecto
+              rol: user.Rol || "Alumno",
             },
           ]);
 
@@ -65,12 +87,18 @@ const Registre = () => {
             `Error al guardar en la base de datos: ${insertError.message}`
           );
           setSnackbarType("danger");
+          setSnackBar(true);
           return;
         }
 
-        // 3. Mostrar mensaje de éxito
+        // 4. Mostrar mensaje de éxito
         setSnackbarMessage("Usuario registrado exitosamente");
         setSnackbarType("success");
+        setShowEmailVerification(true); 
+
+        setTimeout(() => {
+          setShowEmailVerification(false);
+        }, 10000); 
       } catch (err) {
         setSnackbarMessage(`Error inesperado: ${err.message}`);
         setSnackbarType("danger");
@@ -80,7 +108,7 @@ const Registre = () => {
       setSnackbarType("danger");
     }
 
-    // 4. Limpiar el formulario
+    // Limpiar el formulario
     setUser({
       Nombre: "",
       Apellido: "",
@@ -89,18 +117,28 @@ const Registre = () => {
       Rol: "Alumno",
     });
 
-    // 5. Mostrar el mensaje de la "snackbar"
     setSnackBar(true);
-
-    // 6. Ocultar la snackbar después de 3 segundos
     setTimeout(() => {
       setSnackBar(false);
-    }, 3000);
+    }, 2000); 
   };
 
   return (
     <>
       <main className="container mt-5">
+        {showEmailVerification && (
+          <div className="alert alert-info mb-4">
+            <strong>¡Verifica tu correo electrónico!</strong>
+            <p>
+              Hemos enviado un enlace de verificación a tu correo electrónico.
+              Por favor, revisa tu bandeja de entrada y haz clic en el enlace
+              para activar tu cuenta.
+            </p>
+            <p className="mb-0">
+              Una vez verificado, podrás iniciar sesión con tus credenciales.
+            </p>
+          </div>
+        )}
         <div className="pt-5">
           <h1 className="w-100 text-center">Registro</h1>
           <form
@@ -170,10 +208,11 @@ const Registre = () => {
       {snackbar && (
         <div className="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
           <div
-            className={`toast show bg-${snackbarType}`}
+            className={`toast show bg-${snackbarType} text-white rounded-3 shadow-lg`}
             role="alert"
             aria-live="assertive"
             aria-atomic="true"
+            style={{ animation: "slideIn 0.5s ease-out" }}
           >
             <div className="toast-header">
               <strong className="me-auto">

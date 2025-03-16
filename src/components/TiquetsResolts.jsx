@@ -1,5 +1,3 @@
-"use client";
-
 const TiquetsResolts = ({
   tickets,
   resolveTicket,
@@ -10,6 +8,15 @@ const TiquetsResolts = ({
   setCurrentTicket,
   editTicket,
 }) => {
+  const sortedTickets = tickets
+    .filter((ticket) => ticket.estado === "Resuelto")
+    .sort((a, b) => {
+      if (a.id !== b.id) {
+        return a.id - b.id;
+      }
+      return new Date(a.fecha_resuelto) - new Date(b.fecha_resuelto);
+    });
+
   return (
     <>
       {rol === "Admin" && (
@@ -31,59 +38,57 @@ const TiquetsResolts = ({
                 </tr>
               </thead>
               <tbody>
-                {tickets.map((ticket) =>
-                  ticket.estado === "Resuelto" ? (
-                    <tr key={ticket.id}>
-                      <td>{ticket.id}</td>
-                      <td>{ticket.fecha}</td>
-                      <td>{ticket.fecha_resuelto}</td>
-                      <td>{ticket.aula}</td>
-                      <td>{ticket.grupo}</td>
-                      <td>{ticket.ordenador}</td>
-                      <td>{ticket.descripcion}</td>
-                      <td>{ticket.alumno}</td>
-                      <td>
-                        <div className="action-buttons">
-                          <button
-                            onClick={() => {
-                              handleModal();
-                              setCurrentTicket(ticket);
-                              editTicket(ticket);
-                            }}
-                            className="btn btn-warning btn-sm me-1"
-                            title="Añadir comentario"
-                          >
-                            <i
-                              className="bi bi-pencil"
-                              data-bs-toggle="modal"
-                              data-bs-target="#exampleModal"
-                            ></i>
-                          </button>
+                {sortedTickets.map((ticket) => (
+                  <tr key={ticket.id}>
+                    <td>{ticket.id}</td>
+                    <td>{ticket.fecha}</td>
+                    <td>{ticket.fecha_resuelto}</td>
+                    <td>{ticket.aula}</td>
+                    <td>{ticket.grupo}</td>
+                    <td>{ticket.ordenador}</td>
+                    <td>{ticket.descripcion}</td>
+                    <td>{ticket.alumno}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          onClick={() => {
+                            handleModal();
+                            setCurrentTicket(ticket);
+                            editTicket(ticket);
+                          }}
+                          className="btn btn-warning btn-sm me-1"
+                          title="Añadir comentario"
+                        >
+                          <i
+                            className="bi bi-pencil"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                          ></i>
+                        </button>
 
-                          <button
-                            onClick={() => {
-                              handleNavigateToComentarios(ticket.id);
-                              handleModal();
-                              setCurrentTicket(ticket);
-                            }}
-                            className="btn btn-info btn-sm me-1"
-                            title="Ver comentarios"
-                          >
-                            <i className="bi bi-chat-left-text"></i>
-                          </button>
+                        <button
+                          onClick={() => {
+                            handleNavigateToComentarios(ticket.id);
+                            handleModal();
+                            setCurrentTicket(ticket);
+                          }}
+                          className="btn btn-info btn-sm me-1"
+                          title="Ver comentarios"
+                        >
+                          <i className="bi bi-chat-left-text"></i>
+                        </button>
 
-                          <button
-                            className="btn btn-danger btn-sm me-1"
-                            title="Eliminar ticket"
-                            onClick={() => deleteTicket(ticket.id)}
-                          >
-                            <i className="bi bi-trash3"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : null
-                )}
+                        <button
+                          className="btn btn-danger btn-sm me-1"
+                          title="Eliminar ticket"
+                          onClick={() => deleteTicket(ticket.id)}
+                        >
+                          <i className="bi bi-trash3"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

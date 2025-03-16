@@ -12,23 +12,43 @@ import {
 } from "react-bootstrap";
 import { getDadesUsuaris, setDadesUsuaris } from "../database/gestionTickets";
 import Header from "../components/Header";
-import supabase from "../config/config"; // Asegúrate de importar supabase
+import supabase from "../config/config";
+import "../styles.css";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
+  const [snackbar, setSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarType, setSnackbarType] = useState("");
 
   const fetchUsers = async () => {
     const { data, error } = await supabase.from("dades_usuaris").select();
     if (error) {
       console.error("Error obteniendo usuarios:", error);
     } else {
-      setUsers(data);
+      const sortedUsers = data.sort((a, b) => {
+        if (a.nombre.toLowerCase() < b.nombre.toLowerCase()) return -1;
+        if (a.nombre.toLowerCase() > b.nombre.toLowerCase()) return 1;
+
+        return a.id - b.id;
+      });
+      setUsers(sortedUsers);
     }
   };
 
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    if (snackbar) {
+      const timer = setTimeout(() => {
+        setSnackbar(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [snackbar]);
 
   const handleRoleChange = async (id, newRole) => {
     const { data, error } = await supabase
@@ -43,18 +63,24 @@ const AdminDashboard = () => {
 
     if (error) {
       console.error("Error actualizando el rol:", error);
+      setSnackbarMessage("Error actualizando el rol.");
+      setSnackbarType("danger");
+      setSnackbar(true);
     } else {
       const updatedUsers = users.map((user) =>
         user.id === id ? { ...user, rol: newRole } : user
       );
       setUsers(updatedUsers);
+
+      setSnackbarMessage("Rol actualizado exitosamente.");
+      setSnackbarType("success");
+      setSnackbar(true);
     }
   };
 
   return (
     <div>
       <Header />
-
       <div className="d-flex">
         <div style={{ marginLeft: "220px", padding: "20px", width: "100%" }}>
           <h1>Administració d’Usuaris</h1>
@@ -92,6 +118,33 @@ const AdminDashboard = () => {
               ))}
             </tbody>
           </Table>
+          {snackbar && (
+            <div
+              className={`toast-container position-fixed top-0 start-50 translate-middle-x p-3 fadeInUp`}
+            >
+              <div
+                className={`toast show bg-${snackbarType} text-white rounded-3 shadow-lg`}
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+                style={{ animation: "slideIn 0.5s ease-out" }}
+              >
+                <div className="toast-header">
+                  <strong className="me-auto">
+                    {snackbarType === "success" ? "Éxito" : "Error"}
+                  </strong>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    data-bs-dismiss="toast"
+                    aria-label="Close"
+                    onClick={() => setSnackbar(false)}
+                  ></button>
+                </div>
+                <div className="toast-body">{snackbarMessage}</div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
