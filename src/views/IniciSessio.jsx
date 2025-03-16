@@ -69,7 +69,7 @@ const IniciSessio = () => {
       setTimeout(() => {
         setSnackBar(false);
         navigate("/panel");
-      }, 2000); 
+      }, 2000);
     } catch (err) {
       setSnackbarMessage(`Error inesperado: ${err.message}`);
       setSnackbarType("danger");
@@ -117,6 +117,11 @@ const IniciSessio = () => {
             <div className="mt-2">
               <a className="text-decoration-none" href="/Registre">
                 Si no tienes cuenta registrate
+              </a>
+            </div>
+            <div className="mt-2">
+              <a className="text-decoration-none" href="/RememberPassword">
+                Recuperar contraseña
               </a>
             </div>
           </form>

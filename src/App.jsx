@@ -6,6 +6,8 @@ import Panell from "./views/Panell";
 import Comentaris from "./views/Comentaris";
 import Tiquet from "./views/tiquet";
 import AdminDashboard from "./views/AdminDashboard";
+import RememberPassword from "./views/RememberPassword";
+import ResetPassword from "./views/ResetPassword";
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
         <Route path="/comentaris/:id" element={<Comentaris />} />
         <Route path="/tiquet" element={<Tiquet />} />
         <Route path="/adminDashboard" element={<AdminDashboard />} />
+        <Route path="/RememberPassword" element={<RememberPassword />} />
+        <Route path="/ResetPassword" element={<ResetPassword />} />
       </Routes>
     </Router>
   );
