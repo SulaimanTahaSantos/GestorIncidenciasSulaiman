@@ -137,9 +137,9 @@ const Panell = () => {
     if (snackbar) {
       const timer = setTimeout(() => {
         setSnackBar(false);
-      }, 2000); 
+      }, 2000);
 
-      return () => clearTimeout(timer); 
+      return () => clearTimeout(timer);
     }
   }, [snackbar]);
 
@@ -147,10 +147,12 @@ const Panell = () => {
     <>
       <Header />
       <main className="container mt-5">
-        <h1>Administración de incidencias</h1>
-        <button className="btn btn-success mt-4" onClick={handleModal}>
-          Añadir ticket
-        </button>
+        <div className="ms-5">
+          <h1>Administración de incidencias</h1>
+          <button className="btn btn-success mt-4" onClick={handleModal}>
+            Añadir ticket
+          </button>
+        </div>
 
         <Tiquet
           show={showModal}

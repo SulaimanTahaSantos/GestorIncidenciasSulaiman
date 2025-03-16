@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { BrowserView, MobileView } from "react-device-detect";
 import supabase from "../config/config";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -68,48 +70,106 @@ const Header = () => {
     }
   };
 
+  const NavigationLinks = ({
+    className = "",
+    btnClassName = "btn btn-secondary mb-2 me-2",
+  }) => (
+    <>
+      <li className={`nav-item ${className}`}>
+        <Link to="/panel" className={btnClassName}>
+          PANEL
+        </Link>
+      </li>
+      {userRole === "Admin" && (
+        <li className={`nav-item ${className}`}>
+          <Link to="/adminDashboard" className={btnClassName}>
+            Administració d'Usuaris
+          </Link>
+        </li>
+      )}
+      {userEmail ? (
+        <li className={`nav-item ${className}`}>
+          <Link
+            onClick={handleLogout}
+            to="/"
+            className="btn btn-danger mb-2 me-2"
+          >
+            Cerrar sesión
+          </Link>
+        </li>
+      ) : (
+        <>
+          <li className={`nav-item ${className}`}>
+            <Link to="/" className={btnClassName}>
+              LOGIN
+            </Link>
+          </li>
+          <li className={`nav-item ${className}`}>
+            <Link to="/Registre" className={btnClassName}>
+              REGISTRO
+            </Link>
+          </li>
+        </>
+      )}
+    </>
+  );
+
   return (
     <header>
-      <nav className="navbar navbar-light bg-light">
-        <div className="container-fluid">
-          <a className="navbar-brand">Gestión de incidencias FPLLEFIA</a>
-          <div>
-            <Link to="/panel" className="btn btn-secondary ms-2">
-              PANEL
-            </Link>
-            {userRole === "Admin" && (
-              <Link to="/adminDashboard" className="btn btn-secondary ms-2">
-                Administració d’Usuaris
-              </Link>
-            )}
-            {userEmail ? (
-              <Link
-                onClick={handleLogout}
-                to="/"
-                className="btn btn-danger ms-2"
-              >
-                Cerrar sesión
-              </Link>
-            ) : (
-              <>
-                <Link to="/" className="btn btn-secondary ms-2">
-                  LOGIN
-                </Link>
-                <Link to="/Registre" className="btn btn-secondary ms-2">
-                  REGISTRO
-                </Link>
-              </>
-            )}
+      <BrowserView>
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+          <div className="container">
+            <a className="navbar-brand" href="#">
+              Gestión de incidencias FPLLEFIA
+            </a>
+            <div className="d-flex justify-content-center flex-grow-1">
+              <ul className="navbar-nav">
+                <NavigationLinks />
+              </ul>
+            </div>
+            <div className="ms-3 mt-2">
+              {userEmail ? (
+                <span>{userEmail}</span>
+              ) : (
+                <span>No estás logueado</span>
+              )}
+            </div>
           </div>
-          <div>
-            {userEmail ? (
-              <span>{userEmail}</span>
-            ) : (
-              <span>No estás logueado</span>
-            )}
+        </nav>
+      </BrowserView>
+
+      <MobileView>
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+          <div className="container-fluid">
+            <a className="navbar-brand" href="#">
+              Gestión de incidencias FPLLEFIA
+            </a>
+            <button
+              className="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarNav"
+              aria-controls="navbarNav"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span className="navbar-toggler-icon"></span>
+            </button>
+            <div className="collapse navbar-collapse" id="navbarNav">
+              <ul className="navbar-nav ms-auto">
+                <NavigationLinks />
+              </ul>
+              <div className="ms-3 mt-2">
+                {userEmail ? (
+                  <span>{userEmail}</span>
+                ) : (
+                  <span>No estás logueado</span>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </MobileView>
     </header>
   );
 };

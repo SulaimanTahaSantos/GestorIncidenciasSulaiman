@@ -42,7 +42,7 @@ function Comentari({ onComentarioSubmit, comentarios = [], idTicket }) {
         <div className="d-flex align-items-center">
           <input
             type="date"
-            className="form-control w-25"
+            className="form-control w-50"
             value={fecha}
             onChange={handleFechaChange}
           />

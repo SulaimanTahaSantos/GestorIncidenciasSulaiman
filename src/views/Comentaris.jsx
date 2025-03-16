@@ -12,7 +12,6 @@ function Comentaris() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarType, setSnackbarType] = useState("success");
 
-  // Obtener el usuario logueado
   const getUsuario = async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error) {
@@ -47,7 +46,6 @@ function Comentaris() {
       if (error) {
         console.error("Error al obtener los comentarios:", error);
       } else {
-        // Para cada comentario, obtenemos el nombre del usuario
         const comentariosConNombre = await Promise.all(
           data.map(async (comentario) => {
             const { data: userData, error: userError } = await supabase
@@ -128,7 +126,6 @@ function Comentaris() {
         setSnackbarType("success");
         setSnackBar(true);
 
-        // Desaparecer el snackbar después de 2 segundos
         setTimeout(() => setSnackBar(false), 2000);
       }
     }
