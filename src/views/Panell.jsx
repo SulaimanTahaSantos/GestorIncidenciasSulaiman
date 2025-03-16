@@ -1,246 +1,213 @@
 import React, { useState, useEffect } from "react";
-import Header from '../components/Header';
-import { dades_tiquets } from '../database/gestionTickets';
-import Comentari from "../components/Comentari";
-import Comentaris from "./Comentaris";
+import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
+import Tiquet from "./tiquet";
+import TiquetsPendents from "../components/TiquetsPendents";
+import TiquetsResolts from "../components/TiquetsResolts";
+import supabase from "../config/config";
+import "../styles.css";
 
 const Panell = () => {
-  const storedTickets = JSON.parse(localStorage.getItem("tickets")) || dades_tiquets;
+  const [userEmail, setUserEmail] = useState("");
+  const [userRole, setUserRole] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [currentTicket, setCurrentTicket] = useState(null);
+  const [snackbar, setSnackBar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarType, setSnackbarType] = useState("success");
 
   let navigate = useNavigate();
 
-  const [tickets, setTickets] = useState(storedTickets);
-  const [showModal, setShowModal] = useState(false);  // Estado para controlar la visibilidad del modal
-  const [currentTicket, setCurrentTicket] = useState(null);
-  const updateLocalStorage = (updatedTickets) => {
-    localStorage.setItem("tickets", JSON.stringify(updatedTickets));
-  };
-
-  const resolveTicket = (codigo) => {
-    const nuevosTickets = tickets.map((ticket) => {
-      if (ticket.Codigo === codigo && ticket.Estado === "Pendiente") {
-        return { ...ticket, Estado: "Resuelto", fechaResuelto: new Date().toLocaleDateString() }; 
+  useEffect(() => {
+    const fetchTickets = async () => {
+      const { data, error } = await supabase.from("dades_tiquets").select();
+      if (error) {
+        console.error("Error obteniendo tickets:", error);
+      } else {
+        setTickets(data);
       }
-      return ticket;
-    });
-    setTickets(nuevosTickets);
-    updateLocalStorage(nuevosTickets); 
-  };
-
-  const deleteTicket = (codigo) => {
-    const nuevosTickets = tickets.filter((ticket) => ticket.Codigo !== codigo);
-    setTickets(nuevosTickets);
-    updateLocalStorage(nuevosTickets); 
-  };
+    };
+    fetchTickets();
+  }, []);
 
   useEffect(() => {
-    updateLocalStorage(tickets); 
-  }, [tickets]);
+    const fetchUser = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error) {
+        setSnackbarMessage(`Error obteniendo el usuario: ${error.message}`);
+        setSnackbarType("danger");
+        setSnackBar(true);
+        return;
+      }
+
+      if (user) {
+        setUserEmail(user.email);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (userEmail) {
+      const fetchRole = async () => {
+        const { data, error } = await supabase
+          .from("dades_usuaris")
+          .select("rol")
+          .eq("email", userEmail)
+          .single();
+
+        if (error) {
+          setSnackbarMessage(
+            `Error obteniendo el rol del usuario: ${error.message}`
+          );
+          setSnackbarType("danger");
+          setSnackBar(true);
+          return;
+        }
+
+        setUserRole(data?.rol);
+      };
+
+      fetchRole();
+    }
+  }, [userEmail]);
+
+  const resolveTicket = async (id) => {
+    const { data, error } = await supabase
+      .from("dades_tiquets")
+      .update({ estado: "Resuelto", fecha_resuelto: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      setSnackbarMessage(`Error resolviendo ticket: ${error.message}`);
+      setSnackbarType("danger");
+      setSnackBar(true);
+    } else {
+      setTickets(tickets.map((ticket) => (ticket.id === id ? data : ticket)));
+      setSnackbarMessage("Ticket resuelto exitosamente");
+      setSnackbarType("success");
+      setSnackBar(true);
+    }
+  };
+
+  const deleteTicket = async (id) => {
+    const { error } = await supabase
+      .from("dades_tiquets")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      setSnackbarMessage(`Error eliminando ticket: ${error.message}`);
+      setSnackbarType("danger");
+      setSnackBar(true);
+    } else {
+      setTickets(tickets.filter((ticket) => ticket.id !== id));
+      setSnackbarMessage("Ticket eliminado exitosamente");
+      setSnackbarType("success");
+      setSnackBar(true);
+    }
+  };
 
   const handleModal = () => {
-    setShowModal(true);  
+    setShowModal(true);
   };
 
   const closeModal = () => {
-    setShowModal(false);  
+    setShowModal(false);
+    setCurrentTicket(null);
   };
-
-  const handleAddComentario = (comentario) => {
-    if (currentTicket) {  
-      const nuevosTickets = tickets.map((ticket) => {
-        if (ticket.Codigo === currentTicket.Codigo) {
-          return {
-            ...ticket,
-            comentarios: [...(ticket.comentarios ?? []), { autor: currentTicket.Alumno, texto: comentario, fecha: new Date().toLocaleDateString() }]
-          };
-        }
-        return ticket;
-      });
-
-
-  
-      setTickets(nuevosTickets);
-      updateLocalStorage(nuevosTickets);
-
-      console.log(nuevosTickets);
-      console.log(currentTicket);
-      console.log(comentario)
-    } else {
-      alert('No se seleccionó ningún ticket.');
-    }
-  }
 
   const handleNavigateToComentarios = (ticketId) => {
-    navigate(`/comentaris/${ticketId}`, {
-    });
+    navigate(`/comentaris/${ticketId}`);
   };
-  
-  
+
+  const editTicket = (ticket) => {
+    setCurrentTicket(ticket);
+    setShowModal(true);
+  };
+
+  useEffect(() => {
+    if (snackbar) {
+      const timer = setTimeout(() => {
+        setSnackBar(false);
+      }, 2000); 
+
+      return () => clearTimeout(timer); 
+    }
+  }, [snackbar]);
 
   return (
     <>
       <Header />
       <main className="container mt-5">
         <h1>Administración de incidencias</h1>
-        <h2 className="mt-5">Tickets pendientes</h2>
-        <table className="table mt-4">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Fecha</th>
-              <th>Aula</th>
-              <th>Grupo</th>
-              <th>Ordenador</th>
-              <th>Descripción</th>
-              <th>Alumno</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map((ticket) =>
-              ticket.Estado === "Pendiente" && (
-                <tr key={ticket.Codigo}>
-                  <td>{ticket.Codigo}</td>
-                  <td>{ticket.Fecha}</td>
-                  <td>{ticket.Aula}</td>
-                  <td>{ticket.Grupo}</td>
-                  <td>{ticket.Ordenador}</td>
-                  <td>{ticket.Descripcion}</td>
-                  <td>{ticket.Alumno}</td>
-                  <td>
-                    <button
-                      className="btn btn-success"
-                      title="Resolver ticket"
-                      onClick={() => resolveTicket(ticket.Codigo)}
-                    >
-                      Resolver
-                    </button>
-                  </td>
-                  <td>
-                    <button onClick={()=> {
-                      handleModal();
-                      setCurrentTicket(ticket);
-                    }} className="btn btn-warning" title="Añadir comentario">
-                      <i className="bi bi-pencil" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <button onClick={()=>{
-                      handleNavigateToComentarios(ticket.Codigo)
-                      handleModal();
-                      setCurrentTicket(ticket);
-                    }} className="btn btn-info" title="Ver comentarios">
-                      <i className="bi bi-chat-left-text"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-danger"
-                      title="Eliminar ticket"
-                      onClick={() => deleteTicket(ticket.Codigo)}
-                    >
-                      <i className="bi bi-trash3"></i>
-                    </button>
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
+        <button className="btn btn-success mt-4" onClick={handleModal}>
+          Añadir ticket
+        </button>
 
-        <h2 className="mt-5">Tickets resueltos</h2>
-        <table className="table mt-4">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Fecha</th>
-              <th>Fecha resuelto</th>
-              <th>Aula</th>
-              <th>Grupo</th>
-              <th>Ordenador</th>
-              <th>Descripción</th>
-              <th>Alumno</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map((ticket) =>
-              ticket.Estado === "Resuelto" && (
-                <tr key={ticket.Codigo}>
-                  <td>{ticket.Codigo}</td>
-                  <td>{ticket.Fecha}</td>
-                  <td>{ticket.fechaResuelto}</td>
-                  <td>{ticket.Aula}</td>
-                  <td>{ticket.Grupo}</td>
-                  <td>{ticket.Ordenador}</td>
-                  <td>{ticket.Descripcion}</td>
-                  <td>{ticket.Alumno}</td>
-                  <td>
-                    <button className="btn btn-success" title="Resolver ticket">
-                      Resolver
-                    </button>
-                  </td>
-                  <td>
-                    <button onClick={handleModal} className="btn btn-warning" title="Añadir comentario">
-                      <i className="bi bi-pencil" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <button className="btn btn-info" title="Ver comentarios">
-                      <i className="bi bi-chat-left-text"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-danger"
-                      title="Eliminar ticket"
-                      onClick={() => deleteTicket(ticket.Codigo)}
-                    >
-                      <i className="bi bi-trash3"></i>
-                    </button>
-                  </td>
-                </tr>
-              )
-            )}
-          </tbody>
-        </table>
+        <Tiquet
+          show={showModal}
+          handleClose={closeModal}
+          onAddTicket={setTickets}
+          currentTicket={currentTicket}
+        />
 
-        {/* {showModal && <Comentari 
-          show={showModal} 
-          handleClose={closeModal} 
-          onSubmit={handleAddComentario} 
-            />
-
-        } */}
-      
-
-  
+        <TiquetsPendents
+          tickets={tickets}
+          resolveTicket={resolveTicket}
+          deleteTicket={deleteTicket}
+          rol={userRole}
+          handleNavigateToComentarios={handleNavigateToComentarios}
+          handleModal={handleModal}
+          editTicket={editTicket}
+          setCurrentTicket={setCurrentTicket}
+        />
+        <TiquetsResolts
+          tickets={tickets}
+          resolveTicket={resolveTicket}
+          deleteTicket={deleteTicket}
+          rol={userRole}
+          handleNavigateToComentarios={handleNavigateToComentarios}
+          handleModal={handleModal}
+          setCurrentTicket={setCurrentTicket}
+          editTicket={editTicket}
+        />
       </main>
-   
 
-
-      {/* <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="exampleModalLabel">Observaciones</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      {snackbar && (
+        <div
+          className={`toast-container position-fixed top-0 start-50 translate-middle-x p-3 fadeInUp`}
+        >
+          <div
+            className={`toast show bg-${snackbarType} text-white rounded-3 shadow-lg`}
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            style={{ animation: "slideIn 0.5s ease-out" }}
+          >
+            <div className="toast-header">
+              <strong className="me-auto">
+                {snackbarType === "success" ? "Éxito" : "Error"}
+              </strong>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="toast"
+                aria-label="Close"
+                onClick={() => setSnackBar(false)}
+              ></button>
             </div>
-            <div className="modal-body">
-              <p>Código incidencia: <span>123546</span></p>
-              <label htmlFor="comentario" className="form-label">Comentario:</label>
-              <input className="form-control" defaultValue="Este es un comentario sobre esta incidencia" />
-              <p className="small text-end">Autor: <span>Pepe Loco</span></p>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" className="btn btn-primary">Guardar cambios</button>
-            </div>
+            <div className="toast-body">{snackbarMessage}</div>
           </div>
         </div>
-      </div> */}
-
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+      )}
     </>
   );
 };

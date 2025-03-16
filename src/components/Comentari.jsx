@@ -14,11 +14,13 @@ function Comentari({ onComentarioSubmit, comentarios = [], idTicket }) {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    
+
     onComentarioSubmit(comentario, fecha);
-    setComentario(""); 
-    setFecha(""); 
+    setComentario("");
+    setFecha("");
   };
+
+  console.log(comentarios);
 
   return (
     <div>
@@ -39,7 +41,7 @@ function Comentari({ onComentarioSubmit, comentarios = [], idTicket }) {
         </label>
         <div className="d-flex align-items-center">
           <input
-            type="datetime-local"
+            type="date"
             className="form-control w-25"
             value={fecha}
             onChange={handleFechaChange}
@@ -55,10 +57,13 @@ function Comentari({ onComentarioSubmit, comentarios = [], idTicket }) {
           comentarios.map((coment, index) => (
             <div className="card p-3 mt-2" key={index}>
               <h5 className="text-end">
-                Autor: <span>{coment.autor}</span>
+                Autor:{" "}
+                <span>
+                  {coment.nombre} {coment.apellido}
+                </span>
                 <span className="ms-4">{coment.fecha}</span>
               </h5>
-              <p>{coment.comentario}</p>
+              <p>{coment.comentari}</p>
             </div>
           ))
         )}
