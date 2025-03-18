@@ -1,4 +1,3 @@
-"use client";
 import { MobileView, BrowserView } from "react-device-detect";
 import { Badge, Card, Button, Row, Col } from "react-bootstrap";
 import "../tickets-pendientes.css";
@@ -25,8 +24,6 @@ const TiquetsPendents = ({
   return (
     <div className="tickets-container">
       <h2 className="mt-5 mb-4">Tickets pendientes</h2>
-
-      {/* Mobile view */}
       <MobileView>
         <div className="mobile-cards-container">
           {sortedTickets.map((ticket) => (
