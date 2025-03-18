@@ -1,4 +1,3 @@
-"use client";
 import { MobileView, BrowserView } from "react-device-detect";
 import { Badge, Card, Button, Row, Col } from "react-bootstrap";
 import "../tickets-pendientes.css";
@@ -27,8 +26,6 @@ const TiquetsResolts = ({
       {rol === "Admin" && (
         <div className="tickets-container">
           <h2 className="mt-5 mb-4">Tickets resueltos</h2>
-
-          {/* Mobile view */}
           <MobileView>
             <div className="mobile-cards-container">
               {sortedTickets.map((ticket) => (
@@ -149,8 +146,6 @@ const TiquetsResolts = ({
               ))}
             </div>
           </MobileView>
-
-          {/* Browser view - keeping the original table */}
           <BrowserView>
             <div className="table-responsive">
               <table className="table table-hover">
